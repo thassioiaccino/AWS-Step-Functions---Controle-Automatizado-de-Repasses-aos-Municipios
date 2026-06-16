@@ -1,0 +1,121 @@
+{
+  "Comment": "Workflow para validar, classificar e consolidar repasses financeiros municipais.",
+  "StartAt": "VerificarArquivoNoS3",
+  "States": {
+    "VerificarArquivoNoS3": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:s3:getObject",
+      "Parameters": {
+        "Bucket.$": "$.bucket",
+        "Key.$": "$.key"
+      },
+      "ResultSelector": {
+        "municipios.$": "States.StringToJson($.Body)"
+      },
+      "ResultPath": "$.arquivo",
+      "Next": "ExistemMunicipios"
+    },
+    "ExistemMunicipios": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.arquivo.municipios[0]",
+          "IsPresent": true,
+          "Next": "ProcessarMunicipios"
+        }
+      ],
+      "Default": "EncerrarSemRegistros"
+    },
+    "ProcessarMunicipios": {
+      "Type": "Map",
+      "ItemsPath": "$.arquivo.municipios",
+      "ResultPath": "$.resultados",
+      "Iterator": {
+        "StartAt": "ValidarMunicipio",
+        "States": {
+          "ValidarMunicipio": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:588957334130:function:ValidateMunicipio",
+            "Next": "RegistroValido"
+          },
+          "RegistroValido": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.valid",
+                "BooleanEquals": true,
+                "Next": "ContaRegular"
+              }
+            ],
+            "Default": "SalvarEmPendencias"
+          },
+          "ContaRegular": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.registro.conta_regular",
+                "BooleanEquals": true,
+                "Next": "AutorizarRepasse"
+              }
+            ],
+            "Default": "SalvarEmPendencias"
+          },
+          "AutorizarRepasse": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:588957334130:function:AutorizarRepasse",
+            "Next": "SalvarEmAprovados"
+          },
+          "SalvarEmAprovados": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:s3:putObject",
+            "Parameters": {
+              "Bucket": "municipios-repasse-thassio-2026-588957334130-us-east-1-an",
+              "Key.$": "States.Format('aprovados/{}-{}.json', $.uf, $.municipio)",
+              "Body.$": "States.JsonToString($)"
+            },
+            "ResultPath": null,
+            "End": true
+          },
+          "SalvarEmPendencias": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:s3:putObject",
+            "Parameters": {
+              "Bucket": "municipios-repasse-thassio-2026-588957334130-us-east-1-an",
+              "Key.$": "States.Format('pendencias/registro-{}.json', States.UUID())",
+              "Body.$": "States.JsonToString($)"
+            },
+            "ResultPath": null,
+            "End": true
+          }
+        }
+      },
+      "Next": "GerarRelatorioConsolidado"
+    },
+    "GerarRelatorioConsolidado": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:588957334130:function:GerarRelatorio",
+      "Parameters": {
+        "resultados.$": "$.resultados"
+      },
+      "ResultPath": "$.relatorio",
+      "Next": "SalvarRelatorio"
+    },
+    "SalvarRelatorio": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:s3:putObject",
+      "Parameters": {
+        "Bucket": "municipios-repasse-thassio-2026-588957334130-us-east-1-an",
+        "Key": "relatorios/relatorio-consolidado.json",
+        "Body.$": "States.JsonToString($.relatorio)"
+      },
+      "ResultPath": null,
+      "Next": "Fim"
+    },
+    "EncerrarSemRegistros": {
+      "Type": "Succeed"
+    },
+    "Fim": {
+      "Type": "Succeed"
+    }
+  }
+}

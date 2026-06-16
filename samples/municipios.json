@@ -1,0 +1,32 @@
+[
+  {
+    "municipio": "Brasilia",
+    "uf": "DF",
+    "valor": 50000,
+    "conta_regular": true
+  },
+  {
+    "municipio": "Goiania",
+    "uf": "GO",
+    "valor": 25000,
+    "conta_regular": false
+  },
+  {
+    "municipio": "Belo Horizonte",
+    "uf": "MG",
+    "valor": 78000,
+    "conta_regular": true
+  },
+  {
+    "municipio": "Salvador",
+    "uf": "BA",
+    "valor": 42000,
+    "conta_regular": true
+  },
+  {
+    "municipio": "Recife",
+    "uf": "PE",
+    "valor": 31500,
+    "conta_regular": false
+  }
+]
