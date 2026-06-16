@@ -57,11 +57,32 @@ aws-stepfunctions-municipal-fund-transfer/
 │   ├── workflow.drawio
 │   └── workflow.png
 ├── samples/
-│   └── municipios.json
+│   ├── municipios.json
+│   ├── municipios-vazio.json
+│   ├── relatorio-consolidado.json
+│   └── relatorio-consolidado.TXT
 ├── images/
 │   ├── architecture.png
+│   ├── cloudwatch-autorizar-repasse-streams.png
+│   ├── cloudwatch-gerar-relatorio-streams.png
+│   ├── cloudwatch-log-groups.png
+│   ├── cloudwatch-validate-municipio-streams.png
+│   ├── execution-details.png
+│   ├── execution-failure-pendencias.png
+│   ├── execution-no-records.png
 │   ├── execution-success.png
-│   └── execution-details.png
+│   ├── lambda-autorizar-repasse-code.png
+│   ├── lambda-functions.png
+│   ├── lambda-gerar-relatorio-code.png
+│   ├── lambda-validate-municipio-code.png
+│   ├── s3-approved-objects.png
+│   ├── s3-bucket-structure.png
+│   ├── s3-input-objects.png
+│   ├── s3-pending-objects.png
+│   ├── s3-report-object.png
+│   ├── s3-report-properties.png
+│   ├── state-machine-executions.png
+│   └── state-machine-overview.png
 ├── lambda/
 │   ├── validate_municipio.py
 │   ├── autorizar_repasse.py
@@ -70,8 +91,8 @@ aws-stepfunctions-municipal-fund-transfer/
 │   └── state_machine.asl.json
 └── docs/
     ├── architecture.md
+    ├── evidences.md
     └── lessons-learned.md
-```
 
 ## Exemplo de Entrada
 
